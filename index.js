@@ -1,4 +1,5 @@
 import express from "express";
+import { userWithParameters, userWithQueryParameters } from "./controller.js";
 
 const app = express();
 
@@ -9,7 +10,7 @@ app.get("/", (req, res) => {
   res.send("Hello World! in express ch");
 });
 
-app.get("/about", (req, res) => { 
+app.get("/about", (req, res) => {
   res.send("Hello World! in express ch about");
 });
 
@@ -18,17 +19,11 @@ app.get("/contact", (req, res) => {
 });
 
 // routes with parameters
-app.get("/user/:id", (req, res) => {
-  const id = req.params.id;
-  res.send(`Hello World! in express ch user id: ${id}`);
-});
+app.get("/user/:id", userWithParameters);
 
 // routes with query parameters
 // /user?branch=it
-app.get("/user", (req, res) => {
-  const keywords = req.query.branch;
-  res.send(`Hello World! in express ch user id: ${keywords}`);
-});
+app.get("/user", userWithQueryParameters);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
