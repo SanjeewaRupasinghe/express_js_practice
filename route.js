@@ -1,6 +1,6 @@
 import express from "express";
 import { userWithParameters, userWithQueryParameters } from "./controller.js";
-import { login, register } from "./userAuthController.js";
+import { login, register, user, userDelete, userPut } from "./userAuthController.js";
 
 const router = express.Router();
 
@@ -21,6 +21,11 @@ router.get("/user", userWithQueryParameters);
 
 router.get("/user/auth/login", login);
 router.get("/user/auth/register", register);
+
+// HTTP methods
+router.post("/user/auth/user",express.json(), user);
+router.put("/user/auth/user/:id",express.json(), userPut);
+router.delete("/user/auth/user/:id", userDelete);
 
 
 export default router;
