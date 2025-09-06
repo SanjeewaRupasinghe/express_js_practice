@@ -21,3 +21,13 @@ export const userDelete = (req, res) => {
   const userId = req.params.id;
   res.json({ id: userId });
 };
+
+export const multiParams = (req, res) => {
+  const { user, id } = req.params;
+  res.json({ id: id, user });
+};
+
+export const multiParamsWithRegex = (req, res) => {
+  const { user, id } = req.params;
+  res.json({ id: id, user });
+};
