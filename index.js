@@ -4,6 +4,12 @@ const app = express();
 
 const PORT = 3000;
 
+// EJS make as view engine
+app.set("view engine", "ejs");
+app.get("/", (req, res) => {
+  res.render("index", { userName: "Sanjeewa" });
+});
+
 // app level middleware
 app.use((req,res,next)=>{
   console.log("App level Middleware");
