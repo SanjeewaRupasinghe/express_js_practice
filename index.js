@@ -1,13 +1,7 @@
 import express from "express";
 import router from "./route.js";
 import multer from "multer";
-
-const storage = multer.diskStorage({
-  destination: "uploads",
-  filename: function (req, file, cb) {
-    cb(null,file.fieldname + "-" + Date.now() + "-" + file.originalname);
-  },
-});
+import {storage} from "./config/multer.js";
 
 const app = express();
 const upload = multer({
