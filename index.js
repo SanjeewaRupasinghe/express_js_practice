@@ -1,19 +1,64 @@
 import express from "express";
 import router from "./route.js";
 import multer from "multer";
-import {storage} from "./config/multer.js";
+import { storage } from "./config/multer.js";
+import { connectDB } from "./config/db.js";
+import Person from "./models/Person.js";
 
 const app = express();
 const upload = multer({
   storage,
   limits: {
-    fileSize: 1024*1024,
+    fileSize: 1024 * 1024,
   },
 });
 const PORT = 3000;
 
+await connectDB();
+
 app.use(express.urlencoded({ extended: true }));
 app.use(upload.single("image"));
+app.use(express.json());
+
+// create
+app.post("/person", async (req, res) => {
+  console.log(req.body);
+
+  // Destructuring
+  const { name, age, email } = req.body;
+  // Create new person
+  const person = new Person({ name, age, email });
+  // Save person
+  await person.save();
+  console.log(person);
+  res.send("Person added");
+});
+
+// update
+app.put("/person/:id", async (req, res) => {
+  console.log(req.body);
+
+  // Destructuring
+  const { name, age, email } = req.body;
+  // Create new person
+  const person = await Person.findByIdAndUpdate(req.params.id, {
+    name,
+    age,
+    email,
+  });
+  console.log(person);
+  res.send("Person updated");
+});
+
+// deleting
+app.delete("/person/:id", async (req, res) => {
+  console.log(req.body);
+
+  // Create new person
+  const person = await Person.findByIdAndDelete(req.params.id);
+  console.log(person);
+  res.send("Person deleted");
+});
 
 app.post("/form", (req, res) => {
   console.log(req.body);
