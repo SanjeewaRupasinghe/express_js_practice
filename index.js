@@ -24,14 +24,20 @@ app.use(express.json());
 app.post("/person", async (req, res) => {
   console.log(req.body);
 
-  // Destructuring
-  const { name, age, email } = req.body;
-  // Create new person
-  const person = new Person({ name, age, email });
-  // Save person
-  await person.save();
-  console.log(person);
-  res.send("Person added");
+  try {
+    // Destructuring
+    const { name, age, email } = req.body;
+    // Create new person
+    const person = new Person({ name, age, email });
+    // Save person
+    await person.save();
+    console.log(person);
+    res.send("Person added");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.errmsg);
+  }
+
 });
 
 // update
