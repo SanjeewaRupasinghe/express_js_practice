@@ -4,6 +4,7 @@ import multer from "multer";
 import { storage } from "./config/multer.js";
 import { connectDB } from "./config/db.js";
 import Person from "./models/Person.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const upload = multer({
@@ -19,6 +20,24 @@ await connectDB();
 app.use(express.urlencoded({ extended: true }));
 app.use(upload.single("image"));
 app.use(express.json());
+app.use(cookieParser());
+
+// Cookies
+// create
+app.get("/cookie", (req, res) => {
+  res.cookie("name", "Sanjeewa");
+  res.send("Cookie set");
+});
+// fetch
+app.get("/cookie/fetch", (req, res) => {
+  console.log(req.cookies);
+  res.send("Cookie fetched");
+});
+// remove
+app.get("/cookie/remove", (req, res) => {
+  res.clearCookie("name");
+  res.send("Cookie removed");
+});
 
 // create
 app.post("/person", async (req, res) => {
@@ -37,7 +56,6 @@ app.post("/person", async (req, res) => {
     console.log(error);
     res.status(500).send(error.errmsg);
   }
-
 });
 
 // update
@@ -76,10 +94,10 @@ app.post("/form", (req, res) => {
 app.use(express.static("public"));
 
 // EJS make as view engine
-app.set("view engine", "ejs");
-app.get("/", (req, res) => {
-  res.render("index", { userName: "Sanjeewa" });
-});
+// app.set("view engine", "ejs");
+// app.get("/", (req, res) => {
+//   res.render("index", { userName: "Sanjeewa" });
+// });
 
 // app level middleware
 app.use((req, res, next) => {
