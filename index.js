@@ -5,6 +5,7 @@ import { storage } from "./config/multer.js";
 import { connectDB } from "./config/db.js";
 import Person from "./models/Person.js";
 import cookieParser from "cookie-parser";
+import session from "express-session";
 
 const app = express();
 const upload = multer({
@@ -21,6 +22,30 @@ app.use(express.urlencoded({ extended: true }));
 app.use(upload.single("image"));
 app.use(express.json());
 app.use(cookieParser());
+app.use(session({
+  secret: "secret",
+  resave: false,
+  saveUninitialized: false,
+}));
+
+
+// Session
+app.get("/session", (req, res) => {
+
+  req.session.page_views = req.session.page_views ? req.session.page_views : 0;
+
+  req.session.page_views++;
+  res.send(`You visited this page ${req.session.page_views} times`);
+});
+app.get("/session/fetch", (req, res) => {
+  console.log(req.session);
+  res.send("Session fetched");
+});
+app.get("/session/remove", (req, res) => {
+  req.session.destroy();
+  res.send("Session removed");
+});
+
 
 // Cookies
 // create
