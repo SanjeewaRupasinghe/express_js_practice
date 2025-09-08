@@ -6,6 +6,8 @@ import { connectDB } from "./config/db.js";
 import Person from "./models/Person.js";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 const app = express();
 const upload = multer({
@@ -32,6 +34,47 @@ app.use(
 
 const users = [];
 
+// JWT
+app.post("/jwt/register", (req, res) => {
+  const { password, email } = req.body;
+
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  users.push({ password: hashedPassword, email });
+  res.send("User registered");
+});
+
+app.post("/jwt/login", (req, res) => {
+  const { password, email } = req.body;
+  const user = users.find((user) => user.email === email);
+
+  if (!user) {
+    return res.send("User not found");
+  }
+
+  console.log(user);
+
+  const isPasswordValid = bcrypt.compareSync(password, user.password);
+  if (!isPasswordValid) {
+    return res.send("Invalid password");
+  }
+
+  const token = jwt.sign({ email }, "secret", { expiresIn: "1h" });
+  res.send(token);
+});
+
+app.get("/jwt/dashboard", (req, res) => {
+  const token = req.header("authorization");
+
+  const decodedToken = jwt.verify(token, "secret");
+
+  if (decodedToken.email) {
+    res.send("JWT Dashboard " + decodedToken.email);
+  } else {
+    res.send("Invalid token");
+  }
+});
+
 // Session base authentication
 app.post("/register", (req, res) => {
   const { password, email } = req.body;
@@ -41,10 +84,12 @@ app.post("/register", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { password, email } = req.body;
-  const user = users.find((user) => user.password === password && user.email === email);
+  const user = users.find(
+    (user) => user.password === password && user.email === email
+  );
   if (!user) {
     return res.send("User not found");
-  } 
+  }
   req.session.user = user;
   res.send("User logged in");
 });
