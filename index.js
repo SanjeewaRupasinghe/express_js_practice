@@ -22,16 +22,48 @@ app.use(express.urlencoded({ extended: true }));
 app.use(upload.single("image"));
 app.use(express.json());
 app.use(cookieParser());
-app.use(session({
-  secret: "secret",
-  resave: false,
-  saveUninitialized: false,
-}));
+app.use(
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
+const users = [];
+
+// Session base authentication
+app.post("/register", (req, res) => {
+  const { password, email } = req.body;
+  users.push({ password, email });
+  res.send("User registered");
+});
+
+app.post("/login", (req, res) => {
+  const { password, email } = req.body;
+  const user = users.find((user) => user.password === password && user.email === email);
+  if (!user) {
+    return res.send("User not found");
+  } 
+  req.session.user = user;
+  res.send("User logged in");
+});
+
+app.get("/dashboard", (req, res) => {
+  if (req.session.user) {
+    res.send("User logged in " + req.session.user.email);
+  } else {
+    res.send("User not found");
+  }
+});
+
+app.get("/logout", (req, res) => {
+  req.session.destroy();
+  res.send("User logged out");
+});
 
 // Session
 app.get("/session", (req, res) => {
-
   req.session.page_views = req.session.page_views ? req.session.page_views : 0;
 
   req.session.page_views++;
@@ -45,7 +77,6 @@ app.get("/session/remove", (req, res) => {
   req.session.destroy();
   res.send("Session removed");
 });
-
 
 // Cookies
 // create
