@@ -32,9 +32,97 @@ app.use(
   })
 );
 
+// ERROR HANDLING
+app.use((err, req, res, next) => {
+  console.log(err.message);
+  console.log(err.stack);
+  res.status(500).json({ message: err.message });
+});
+
+// synchronize error
+app.get("/sync-error", (req, res,next) => {
+  try {
+    throw new Error("Error");
+  } catch (error) {
+    next(error);
+  }
+});
+
+// uncaught error
+process.on("uncaughtException", (err) => {
+  console.log(err);
+  console.log(err.stack);
+  process.exit(1);
+});
+
+// unhandled error
+process.on("unhandledRejection", (err) => {
+  console.log(err);
+  console.log(err.stack);
+  process.exit(1);
+});
+
+// Asynchronism error
+app.get("/async-error",async (req, res,next) => {
+  try {
+    await new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error("Error"));
+      }, 1000);
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// REST API
+const products = [
+  { id: 1, name: "Product 1", price: 100 },
+  { id: 2, name: "Product 2", price: 200 },
+  { id: 3, name: "Product 3", price: 300 },
+];
+
+// index
+app.get("/products", (req, res) => {
+  res.status(200).json(products);
+});
+
+// store
+app.post("/products", (req, res) => {
+  const { name, price } = req.body;
+  products.push({ name, price });
+  res.status(201).json(products);
+});
+
+// show
+app.get("/products/:id", (req, res) => {
+  const product = products.find((product) => product.id == req.params.id);
+  console.log(req.params.id);
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+  res.status(200).json(product);
+});
+
+// update
+app.put("/products/:id", (req, res) => {
+  const product = products.find((product) => product.id == req.params.id);
+  product.name = req.body.name;
+  product.price = req.body.price;
+  res.status(200).json(product);
+});
+
+// destroy
+app.delete("/products/:id", (req, res) => {
+  const product = products.find((product) => product.id == req.params.id);
+  products.splice(products.indexOf(product), 1);
+  res.status(200).json(products);
+});
+
 const users = [];
 
 // JWT
+// register
 app.post("/jwt/register", (req, res) => {
   const { password, email } = req.body;
 
@@ -44,6 +132,7 @@ app.post("/jwt/register", (req, res) => {
   res.send("User registered");
 });
 
+// login
 app.post("/jwt/login", (req, res) => {
   const { password, email } = req.body;
   const user = users.find((user) => user.email === email);
@@ -63,6 +152,7 @@ app.post("/jwt/login", (req, res) => {
   res.send(token);
 });
 
+// dashboard
 app.get("/jwt/dashboard", (req, res) => {
   const token = req.header("authorization");
 
@@ -76,12 +166,14 @@ app.get("/jwt/dashboard", (req, res) => {
 });
 
 // Session base authentication
+// register
 app.post("/register", (req, res) => {
   const { password, email } = req.body;
   users.push({ password, email });
   res.send("User registered");
 });
 
+// login
 app.post("/login", (req, res) => {
   const { password, email } = req.body;
   const user = users.find(
@@ -94,6 +186,7 @@ app.post("/login", (req, res) => {
   res.send("User logged in");
 });
 
+// dashboard
 app.get("/dashboard", (req, res) => {
   if (req.session.user) {
     res.send("User logged in " + req.session.user.email);
@@ -102,6 +195,7 @@ app.get("/dashboard", (req, res) => {
   }
 });
 
+// logout
 app.get("/logout", (req, res) => {
   req.session.destroy();
   res.send("User logged out");
